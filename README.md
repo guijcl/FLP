@@ -1,6 +1,6 @@
 # Fundamentals of Programming Languages
 
-This repository contains all assignments developed for the Fundamentals of Programming Languages course at FCUL (Faculty of Sciences - University of Lisbon), lectured by [Vasco T. Vasconcelos](https://github.com/vmvasconcelos).
+This repository contains all assignments developed for the Fundamentals of Programming Languages course at FCUL (Faculty of Sciences - University of Lisbon), lectured by Professor [Vasco T. Vasconcelos](https://github.com/vmvasconcelos).
 
 ## Course Summary
 
