@@ -1,0 +1,292 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{palatino} % times is boring (but more concise)
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mathpartir}
+\usepackage[margin=1.20in]{geometry}
+
+\title{
+  \color{blue}Fundamentals of Programming Languages\\[1ex]
+  Assignment 2\\[1ex]
+  Cost Semantics and Higher-Order Recursion}
+\author{Guilherme João Correia Lopes\\
+  fc52761
+}
+\date{2022/2023}
+
+\begin{document}
+\maketitle
+% \raggedright
+\setlength{\parskip}{1ex}
+\thispagestyle{empty}
+
+\section{Big-step semantics with cost}
+Assuming all the problem context given for the questions in group 1, we have the following as the answer for each question:\\
+%
+
+\textbf{A. The big step evaluation rules}
+\begin{mathpar}
+  \inferrule*[lab=b-succ]{\mathtt{t1} \Downarrow^{n} \mathtt{nv1}}{\mathtt{succ \ t1} \Downarrow^{n+1} \mathtt{succ \ nv1}}
+  \and
+  \inferrule*[lab=b-predzero]{\mathtt{t1} \Downarrow^{n} \mathtt{0}}{\mathtt{pred \ t1} \Downarrow^{n + 1} \mathtt{0}}
+  \and
+  \inferrule*[lab=b-predsucc]{\mathtt{t1} \Downarrow^{n} \mathtt{succ \ nv1}}{\mathtt{pred \ t1} \Downarrow^{n + 1} \mathtt{nv1}}
+\end{mathpar}
+
+\textbf{B. Example of reduction}
+\[
+\inferrule*[Right=b-app]
+	{
+	*$(lacking space for $2^{nd}$ B-APP, see below)$
+	\\
+	\inferrule*[lab=b-value]
+		{ } {\mathtt{2} \Downarrow^0 \mathtt{2}}
+	\\
+	\inferrule*[Right=b-predsucc] 
+		{\inferrule*[Right=b-predsucc] 
+			{\inferrule*[Right=b-succ] 
+				{\inferrule*[Right=b-succ] 
+					{\inferrule*[Right=b-value] 
+						{ } 
+						{\mathtt{0} \Downarrow^0 \mathtt{0}}}
+					{\mathtt{succ \ 0} \Downarrow^{0 + 1} \mathtt{succ \ 0}}}
+				{\mathtt{succ(succ \ 0)} \Downarrow^{1 + 1} \mathtt{succ(succ \ 0)}}}
+			{\mathtt{pred \ 2} \Downarrow^{1 + 2} \mathtt{succ \ 0}}} 
+		{\mathtt{pred(pred \ 2)} \Downarrow^{1 + 3} 0}
+	}
+	{\mathtt{\lambda f.\lambda x. f(fx) \ pred \ 2} \Downarrow^{1 + 0 + 4} \mathtt{0}}
+\]\\
+
+$*\inferrule*[Right=b-app]
+		{
+			\inferrule*[lab=b-value]
+				{ } {\mathtt{\lambda f.\lambda x. f(fx)} \Downarrow^0 \mathtt{\lambda f.\lambda x. f(fx)}}
+			\\
+			\inferrule*[lab=b-value]
+				{ } {\mathtt{pred} \Downarrow^{0} \mathtt{pred}}
+			\\
+			\inferrule*[lab=b-value] { } {\mathtt{\lambda x. pred(pred \ x)} \Downarrow^{0} \mathtt{\lambda x. pred(pred \ x)}}
+		}
+		{\mathtt{\lambda f.\lambda x. f(fx) \ pred} \Downarrow^{0 + 0 + 0 + 1} \mathtt{\lambda x. pred(pred \ x)}}$\\
+		
+We can conclude that we have $applyTwice \ \mathtt{pred \ 2 \Downarrow^k v}$ for: cost $k = 5$; value $v = 0$;\\
+
+\textbf{C. Evaluation returns a value}
+
+Induction on the rules for $t \Downarrow^n v$
+
+\begin{enumerate}
+\item Induction on B-VALUE: $v \Downarrow^0 v$
+\\This is straightforward, because the rule tells that every value reduces to a value in 0 steps.
+\item Induction on B-APP:
+\\Similarly to the B-SUCC, PREDZERO and B-PREDSUCC cases below, the rule B-APP tells us that $t \Downarrow^n v$ is true if it is confirmed to be the case that $t_1 \Downarrow^n \lambda x.t_1'$ and $t_2 \Downarrow^m v_2$ and $[x \rightarrow v_2]t_1' \Downarrow^o v_1$. In this case, we have to explore 3 subcases for each premise.
+	\begin{enumerate}
+	\item Subcase $t_1 \Downarrow^n \lambda x.t_1'$
+	\\This is somewhat straightforward, because $t_1$ reduces to $\lambda x.t_1'$, and $\lambda x.t_1'$ is a value.
+	\item Subcase $t_2 \Downarrow^m v_2$
+	\\This is straightforward, because $t_2$ reduces to a value.
+	\item Subcase $[x \rightarrow v_2]t_1' \Downarrow^o v_1$
+	\\This is also straightforward, because the substitution $[x \rightarrow v_2]t_1'$ reduces to a value.
+	\end{enumerate}
+We can then see that, when applying B-APP, every subcase meets the requirements, so we can then conclude that $v1$ is a value and have $t \Downarrow^n v$ for B-APP.
+\item Induction on B-SUCC:
+\\The rule B-SUCC tells us that $t \Downarrow^n v$ is true if it is confirmed to exist a $t1 \Downarrow^n nv1$. If so, by applying the induction hypothesis, for $t1 \Downarrow^n nv1$, we conclude that $nv1$ is a value, and so we have $t \Downarrow^n v$ for B-SUCC.
+\item Induction on B-PREDZERO:
+\\The rule B-PREDZERO tells us that $t \Downarrow^n v$ is true if it is confirmed to exist a $t1 \Downarrow^n 0$. If so, by applying the induction hypothesis, for $t1 \Downarrow^n 0$, we conclude that $0$ is a value, and so we have $t \Downarrow^n v$ for B-PREDZERO.
+\item Induction on B-PREDSUCC:
+\\Similarly to the B-SUCC and PREDZERO cases, the rule B-PREDSUCC tells us that $t \Downarrow^n v$ is true if it is confirmed to exist a $t1 \Downarrow^n succ \ nv1$. If so, by applying the induction hypothesis, for $t1 \Downarrow^n succ \ nv1$, we conclude that $succ \ nv1$ is a value (proved in the B-SUCC case), and so we have $t \Downarrow^n v$ for B-PREDSUCC.
+\end{enumerate}
+
+\textbf{D. The cost of big step and small step semantics coincide}
+
+\begin{enumerate}
+\item Proof by rule induction:
+\begin{enumerate}
+\item Case B-VALUE:
+\\The rule says that a value reduces to a value in 0 steps, in other words, $v \Downarrow^0 v$, so it is equal to $v \rightarrow^0 v$ according to the reflexibility of the multi-step evaluation.
+\item Case B-APP:
+\\$t = t_1 t_2$, \ $v = v_1$ and $k = n + m + o + 1$
+\\The rule says that $t \Downarrow^k v$ only if we have the following:
+\begin{enumerate}
+\item $t_1 \Downarrow^n \lambda x.t_1'$, so by the induction hypothesis, we have $t_1 \rightarrow^n \lambda x.t_1'$.
+\item $t_2 \Downarrow^m v_2$, so by the induction hypothesis, we have $t_2 \rightarrow^m v_2$.
+\item $[x \rightarrow v_2]t_1' \Downarrow^o v_1$, so by the induction hypothesis, we have $[x \rightarrow v_2]t_1' \rightarrow^o v_1$.
+\end{enumerate}
+So we can conclude that if $t \Downarrow^k v$, then $t \rightarrow^k v$.
+\item Case B-SUCC:
+\\$t = succ \ t_1$, \ $v = succ \ nv_1$ and $k = n + 1$
+\\The rule says that $t \Downarrow^k v$ only if we have $t_1 \Downarrow^n nv_1$. By the induction hypothesis, having $t_1 \Downarrow^n nv_1$ then we have $t_1 \rightarrow^n nv_1$, so we can conclude that if $t \Downarrow^k v$, then $t \rightarrow^k v$.
+\item Case B-PREDZERO:
+\\$t = pred \ t_1$, \ $v = 0$ and $k = n + 1$
+\\The rule says that $t \Downarrow^k v$ only if we have $t_1 \Downarrow^n 0$. By the induction hypothesis, having $t_1 \Downarrow^n 0$ then we have $t_1 \rightarrow^n 0$, so we can conclude that if $t \Downarrow^k v$, then $t \rightarrow^k v$.
+\item Case B-PREDSUCC:
+\\$t = pred \ t_1$, \ $v = nv_1$ and $k = n + 1$
+\\The rule says that $t \Downarrow^k v$ only if we have $t_1 \Downarrow^n succ \ nv_1$. By the induction hypothesis, having $t_1 \Downarrow^n succ \ nv_1$ then we have $t_1 \rightarrow^n succ \ nv_1$, so we can conclude that if $t \Downarrow^k v$, then $t \rightarrow^k v$.
+\end{enumerate}
+
+\item Proof by induction on k:
+\begin{enumerate}
+\item Case $k = 0$:
+\\The only case in which $k = 0$ is when we have the rule B-VALUE $v \rightarrow^0 v$, which says that a value reduces to a value in 0 steps, so by induction hypothesis we conclude $v \Downarrow^0 v$.
+\item Case $k = n$
+\begin{enumerate}
+\item Case B-APP:
+\\$t = t_1 t_2$ and $v = v_1$
+\\The rule says that $t \rightarrow^k v$ only if we have the following:
+\begin{enumerate}
+\item $t_1 \rightarrow^p \lambda x.t_1'$, so by the induction hypothesis, we have $t_1 \Downarrow^p \lambda x.t_1'$.
+\item $t_2 \rightarrow^m v_2$, so by the induction hypothesis, we have $t_2 \Downarrow^m v_2$.
+\item $[x \rightarrow v_2]t_1' \rightarrow^o v_1$, so by the induction hypothesis, we have $[x \rightarrow v_2]t_1' \Downarrow^o v_1$.
+\end{enumerate}
+So we can conclude that if $t \rightarrow^k v$, then $t \Downarrow^k v$.
+\item Case B-SUCC:
+\\$t = succ \ t_1$ and $v = succ \ nv_1$
+\\The rule says that $t \rightarrow^k v$ only if we have $t_1 \rightarrow^{k-1} nv_1$. By the induction hypothesis, having $t_1 \rightarrow^{k-1} nv_1$ then we have $t_1 \Downarrow^{k-1} nv_1$, so we can conclude that if $t \rightarrow^k v$, then $t \Downarrow^k v$.
+\item Case B-PREDZERO:
+\\$t = pred \ t_1$ and $v = 0$
+\\The rule says that $t \rightarrow^k v$ only if we have $t_1 \rightarrow^{k-1} 0$. By the induction hypothesis, having $t_1 \rightarrow^{k-1} 0$ then we have $t_1 \Downarrow^{k-1} 0$, so we can conclude that if $t \rightarrow^k v$, then $t \Downarrow^k v$.
+\item Case B-PREDSUCC:
+\\$t = pred \ t_1$ and $v = nv_1$
+\\The rule says that $t \rightarrow^k v$ only if we have $t_1 \rightarrow^{k-1} succ \ nv_1$. By the induction hypothesis, having $t_1 \rightarrow^{k-1} succ \ nv_1$ then we have $t_1 \Downarrow^{k-1} succ \ nv_1$, so we can conclude that if $t \rightarrow^k v$, then $t \Downarrow^k v$.
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+
+\section{Godel’s system T}
+
+Assuming all the problem context given for the questions in group 2, we have the following as the answer for each question:\\
+%
+
+\textbf{A. Example of reduction}
+\begin{mathpar}
+  \inferrule*[lab=e-transitivity]
+  	{{\mathtt {t\rightarrow t'}} \\ {\mathtt {t'\xrightarrow{}^* t''}}}
+  	{\mathtt {t\xrightarrow{}^* t''}}
+  \and
+  \inferrule*[lab=e-reflexivity]{ }{\mathtt {t\xrightarrow{}^* t}}
+\end{mathpar}
+
+For the sake of space and readability, it will only be expressed the $t \rightarrow t'$ derivation directly, in multiple one-step transitions, correspondent to what the derivation tree using E-TRANSITIVITY and E-REFLEXIVITY rules would look like.
+$${(\mathtt{\lambda n}~\mathsf{:Nat.}\mathtt{rec(0;x.y.(succ \ x) + y)(n)}) \mathtt{(succ(succ(succ \ 0)))}}\rightarrow$$
+$$\mathtt{rec(0;x.y.(succ \ x) + y)(succ(succ(succ \ 0)))}\rightarrow$$
+$$\mathtt{(succ(succ(succ \ 0))) + (rec(0;x.y.(succ \ x) + y)(succ(succ \ 0)))}\rightarrow$$
+$$\mathtt{(succ(succ(succ \ 0))) + (succ(succ \ 0)) + (rec(0;x.y.(succ \ x) + y)(succ \ 0))}\rightarrow$$
+$$\mathtt{(succ(succ(succ \ 0))) + (succ(succ \ 0)) + (succ \ 0) + (rec(0;x.y.(succ \ x) + y)(0))}\rightarrow$$
+$$\mathtt{(succ(succ(succ \ 0))) + (succ(succ \ 0)) + (succ \ 0) + 0}\rightarrow$$
+$$\mathtt{(succ(succ(succ(succ(succ(succ \ 0))))))}$$
+
+\textbf{B. A definition for +}
+
+$\mathtt{sum = \lambda n.\lambda m. rec(m;x.y.succ \ y)(n)}$\\
+
+\textbf{C. Typing the recursor}
+\[
+\inferrule*[Right=t-rec]
+	{
+		{\mathtt{\Gamma \vdash t_0}~\mathsf{:T}} \\
+		{\mathtt{\Gamma,x}~\mathsf{:Nat}\mathtt{,y}~\mathsf{:T}\mathtt{\ \vdash t_1}~\mathsf{:T}} \\
+		{\mathtt{\Gamma \vdash t}~\mathsf{:Nat}}
+	}
+	{\mathtt{\Gamma \vdash rec(t_0;x.y.t_1)(t)}~\mathsf{:T}}
+\]
+
+\textbf{D. A typing derivation}
+
+Assuming the existence of the arithmetic expressions typing rules for numbers (e.g. T-ZERO) and of the simply typed lambda-calculus typing rules (e.g. T-VAR and T-ABS).
+\[
+\inferrule*[Right=t-abs]
+	{\inferrule*[Right=t-rec]
+		{
+			{\inferrule*[Right=t-zero] { } {\mathtt{n}~\mathsf{:Nat}\mathtt{\ \vdash 0}~\mathsf{:Nat}}} \\
+			{\mathtt{x}~\mathsf{:Nat}\mathtt{,y}~\mathsf{:Nat}\mathtt{,n}~\mathsf{:Nat}\mathtt{\ \vdash (succ \ x) + y}~\mathsf{:Nat}} \\
+			{\inferrule*[Right=t-var] {\mathtt{n}~\mathsf{:Nat}\mathtt{\ \in \mathtt{n}~\mathsf{:Nat}}} {\mathtt{n}~\mathsf{:Nat} \ \mathtt{\vdash n}~\mathsf{:Nat}}}
+		}
+		{\mathtt{n}~\mathsf{:Nat}\ \mathtt{\vdash rec(0;x.y.(succ \ x) + y)(n)}~\mathsf{:Nat}}}
+	{\mathtt{\vdash\lambda n}~\mathsf{:Nat.} \mathtt{rec(0;x.y.(succ \ x) + y)(n)}~\mathsf{:Nat \rightarrow Nat}}
+\]
+A term t is typable (or well typed) if there is some T such that t : T. With this, it is observable, that for the term $S$ there is a $T$ such that $S \mathsf{:T}$, because, as the derivation shows, $S \mathsf{: Nat \rightarrow Nat}$, in other words, $T \mathsf{= Nat \rightarrow Nat}$.\\
+
+\textbf{E. Progress}
+
+{[Proof]} By induction on a derivation of $t:T$. The T-ZERO and T-ABS cases are immediate, since $t$ in these cases is a value. For the other cases, we argue as follows.
+\begin{enumerate}
+\item Case T-SUCC:\\
+$\mathtt {t = succ}$ $\mathtt t_1$ and $\mathtt t_1 ~\mathsf {: Nat}$\\
+By induction hypothesis, either $t_1$ is a value or else there is some $t_1'$ such that $\mathtt t_1 \rightarrow \mathtt t_1'$. If $t_1$ is a value, then the canonical forms lemma assures us that it must be a numeric value, in which case so is $t$. On the other hand, if $\mathtt t_1 \rightarrow \mathtt t_1'$, then, by E-SUCC, $\mathtt {succ}$ $\mathtt t_1 \rightarrow$ $\mathtt {succ}$ $\mathtt t_1'$.
+\item Case T-VAR:\\
+This case cannot occur, because $t$ is closed.
+\item Case T-APP:\\
+Using the Inversion of Typing Relation, we know that $t = t_1 t_2$, $\Gamma\vdash t_1 : T_{11} \rightarrow T_{12}$ and $\Gamma\vdash t_1 : T_{11}$. By induction hypothesis, either $t_1$ is a value or else there is some $t_1'$ such that $\mathtt t_1 \rightarrow \mathtt t_1'$. By induction hypothesis, either $t_2$ is a value or else there is some $t_2'$ such that $\mathtt t_2 \rightarrow \mathtt t_2'$. With that said, we have the following:
+\begin{enumerate}
+\item If $\mathtt t_1 \rightarrow \mathtt t_1'$, then apply E-APP1.
+\item If $t_1$ is a value and $\mathtt t_2 \rightarrow \mathtt t_2'$, then apply E-APP2.
+\item If $t_1$ is a value and $t_2$ is also a value, we know that $\vdash t_1 : T_{11} \rightarrow T_{12}$ and the canonical form tells that $t_1 = \lambda x.t_1$, then we apply E-APPABS.
+\end{enumerate}
+\item Case T-REC:\\
+$\mathtt {t = rec(t_0;x.y.t_1)(t_2)}$, \ $\Gamma\vdash \mathtt t_0 ~\mathsf {: T}$, \ $\Gamma, x\mathsf{:Nat}, y\mathsf{:T}\vdash \mathtt t_1 ~\mathsf {: T}$ \ and \ $\Gamma\vdash \mathtt t_2 ~\mathsf {: Nat}$\\
+By induction hypothesis, either $t_2$ is a value or else there is some $t_2'$ such that $\mathtt t_2 \rightarrow \mathtt t_2'$. If $t_2$ is a value, then the canonical forms lemma assures us that it must be a numeric value, in other words, either 0 or $succ \ nv$, and one of the rules E-REC-Z or E-REC-S applies to $t$. On the other hand, if $\mathtt t_2 \rightarrow \mathtt t_2'$, then, by E-REC-A, $\mathtt {rec(t_0;x.y.t_1)(t_2)} \rightarrow$ $\mathtt {rec(t_0;x.y.t_1)(t_2')}$.
+\end{enumerate}
+
+\textbf{F. Preservation}
+
+{[Proof]} By induction on a derivation of $t:T$. At each step of the induction, we assume that the desired property holds for all subderivations (i.e., that if $\mathtt s ~\mathsf {: S}$ and $\mathtt s \rightarrow \mathtt s'$, then $\mathtt s' ~\mathsf {: S}$ whenever $\mathtt s ~\mathsf {: S}$ is proved by a subderivation of the present one) then  and proceed by case analysis on the final rule in the derivation.
+\begin{enumerate}
+\item Case T-ZERO:\\
+$\mathtt {t = 0}$ and $\mathtt T~\mathsf {= Nat}$\\
+If the last rule in the derivation is T-ZERO, then we know from the form of this rule that $t$ must be a value and $\mathtt T$ must be $\mathsf { : Nat}$. But if $t$ is a value, then it cannot be the case that $\mathtt t \rightarrow \mathtt{t'}$ for any $t'$, and the requirements of the theorem are vacuously satisfied.
+\item Case T-SUCC:\\
+$\mathtt {t = succ}$ $\mathtt t_1$, $\mathtt T~\mathsf {= Nat}$ and $\mathtt t_1 ~\mathsf {: Nat}$\\
+By inspecting the evaluation rules, we see that there is just one rule, E-SUCC, that can be used to derive $\mathtt t \rightarrow \mathtt{t'}$. The form of this rule tells us that $\mathtt t_1 \rightarrow \mathtt{t_1'}$. Since we also know $\mathtt t_1 ~\mathsf {: Nat}$, we can apply the induction hypothesis to obtain $\mathtt t_1' ~\mathsf {: Nat}$, from which we obtain $\mathtt {succ(t_1')} ~\mathsf {: Nat}$, i.e., $\mathtt{t'} : \mathtt T$, by applying rule T-SUCC.
+\item Case T-VAR:\\
+$\mathtt {t = x}$ and $\mathtt x~\mathsf {:T}$\\
+If the last rule in the derivation is T-VAR, then we know from the form of this rule that $t$ must be a value and $\mathtt T$ must be $\mathsf { :T}$. But if $t$ is a value, then it cannot be the case that $\mathtt t \rightarrow \mathtt{t'}$ for any $t'$, and the requirements of the theorem are vacuously satisfied.
+\item Case T-ABS:\\
+$\mathtt {t = \lambda x}~\mathsf{:T_1}\mathtt {.t_2}$, \ $\mathtt T~\mathsf {= T_1 \rightarrow T_2}$ \ and \ $\mathtt t_2 ~\mathsf {: T_2}$\\
+If the last rule in the derivation is T-ABS, then we know from the form of this rule that $t$ must be a value and $\mathtt T$ must be $\mathsf { :T_1 \rightarrow T_2}$. But if $t$ is a value, then it cannot be the case that $\mathtt t \rightarrow \mathtt{t'}$ for any $t'$, and the requirements of the theorem are vacuously satisfied.
+\item Case T-APP:\\
+If the last rule in the derivation is T-APP, then, using the Inversion of Typing Relation, we know that $t = t_1 t_2$, \ $\mathsf T~\mathsf {= T_{12}}$, \ $\Gamma\vdash t_1 : T_{11} \rightarrow T_{12}$ \ and \ $\Gamma\vdash t_2 : T_{11}$.
+By inspecting the evaluation rules, we find that there are three rules, E-APP1, E-APP2 and E-APPABS, that can be used to derive $\mathtt t \rightarrow \mathtt{t'}$.
+\begin{enumerate}
+\item E-APP1: $\mathtt t_1 \rightarrow \mathtt t_1'$, \ $\mathtt{t' = t_1' t_2}$
+\\Since we know $\Gamma\vdash t_1 ~\mathsf{:T_{11}} \rightarrow ~\mathsf{T_{12}}$, we can apply the induction hypothesis to obtain $\Gamma\vdash t_1' ~\mathsf{:T_{11}} \rightarrow ~\mathsf{T_{12}}$, from which we obtain $\mathtt{\Gamma\vdash t_1' t_2}~\mathsf {:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying rule T-APP.
+\item E-APP2: $\mathtt t_2 \rightarrow \mathtt t_2'$, \ $\mathtt{t' = v_1 t_2'}$
+\\Since we know $\Gamma\vdash t_2 ~\mathsf{: T_{11}}$, we can apply the induction hypothesis to obtain $\Gamma\vdash t_2' ~\mathsf{: T_{11}}$, from which we obtain $\mathtt{\Gamma\vdash v_1 t_2'}~\mathsf {:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying rule T-APP.
+\item E-APPABS: $\mathtt{t' = \Gamma\vdash[x \rightarrow t_2] t_1'}$
+\\We know that \ $\vdash t_1 ~\mathsf{: T_{11} \rightarrow T_{12}}$ and the canonical form tells that $t_1 = \lambda x.t_1'$ \\ $\mathtt{\Gamma, x}~\mathsf{:T_{11}}\mathtt{\ \vdash t_1'}~\mathsf {:T_{12}}$ \\ $t_2$ is a value $\mathtt{\Gamma\vdash t_2}~\mathsf {:T_{11}}$ \\
+We obtain $\Gamma\vdash[x \rightarrow t_2] t_1' \mathsf{:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying the Preservation of Types Under Substitution, in which its result preserves the type $\mathsf{T}$.
+\end{enumerate}
+\item Case T-REC:\\
+$\mathtt {t = rec(t_0;x.y.t_1)(t_2)}$, \ $\Gamma\vdash \mathtt t_0 ~\mathsf {: T}$, \ $\Gamma, x\mathsf{:Nat}, y\mathsf{:T}\vdash \mathtt t_1 ~\mathsf {: T}$ \ and \ $\Gamma\vdash \mathtt t_2 ~\mathsf {: Nat}$\\
+By inspecting the evaluation rules, we see that there are three rules, E-REC-A, E-REC-Z and E-REC-S, that can be used to derive $\mathtt t \rightarrow \mathtt{t'}$.
+\begin{enumerate}
+\item E-REC-A: $\mathtt t_2 \rightarrow \mathtt t_2'$, \ $\mathtt{t' = {rec(t_0;x.y.t_1)(t_2')}}$
+\\Since we know $\Gamma\vdash t_2 ~\mathsf{: Nat}$, we can apply the induction hypothesis to obtain $\Gamma\vdash t_2' ~\mathsf{: Nat}$, from which we obtain $\mathtt{rec(t_0;x.y.t_1)(t_2')}~\mathsf {:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying rule T-REC.
+\item E-REC-Z: $\mathtt t_2 = 0$, \ $\mathtt{t' = t_0}$
+\\If $t \rightarrow t'$ is derived using E-REC-Z, then from the form of this rule we see that $t_2$ must be 0 and the resulting term $t'$ is $t_0$. This mean we are finished, since we know (by de assumptions of the T-REC case) that $t_0\mathsf{:T}$, which is what we need.
+\item E-REC-S: $\mathtt t_2 = \mathtt{succ \ nv}$, \ $\mathtt{t' = \Gamma\vdash[x \rightarrow nv][y \rightarrow s] t_1}$
+\\If $t \rightarrow t'$ is derived using E-REC-S, then from the form of this rule we have the following:
+\begin{enumerate}
+\item First Substitution:\\
+$\mathtt{\Gamma, x}~\mathsf{:Nat}\mathtt{\ \vdash t_1}~\mathsf {:T}$ \\ 
+$t_2 = \mathtt{succ \ nv}$ and $\mathtt{\Gamma\vdash t_2}~\mathsf {:Nat}$ \\
+We obtain $\Gamma\vdash[x \rightarrow nv] t_1 \mathsf{:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying the Preservation of Types Under Substitution, in which its result preserves the type $\mathsf{T}$.
+\item Second Substitution:\\
+Assuming $t'$ to be the result of the first substitution. \\
+$\mathtt{\Gamma, y}~\mathsf{:T}\mathtt{\ \vdash t'}~\mathsf {:T}$ \\ 
+$s = rec	(t_0;x.y.t_1)(nv)$ and $s \mathsf{:T}$\\
+We obtain $\Gamma\vdash[y \rightarrow s] t' \mathsf{:T}$, i.e., $\mathtt{t''}~\mathsf{:T}$, by applying the Preservation of Types Under Substitution, in which its result preserves the type $\mathsf{T}$.
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

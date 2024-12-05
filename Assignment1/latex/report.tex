@@ -1,0 +1,475 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{palatino} % times is boring (but more concise)
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mathpartir}
+
+\title{
+  \color{blue}Fundamentals of Programming Languages\\[1ex]
+  Assignment 1\\[1ex]
+  Statics and Dynamics}
+\author{Mestrado em (Engenharia) Informática\\
+  Faculdade de Ciências da Universidade de Lisboa
+}
+\date{2022/2023}
+
+\begin{document}
+\maketitle
+% \raggedright
+\setlength{\parskip}{1ex}
+\thispagestyle{empty}
+
+\section{Natural numbers and induction (20\%)}
+
+We have introduced natural numbers by means of a grammar such as the one below.
+%
+\begin{align*}
+  \mathtt a ::= & & \textit{naturals:}\\
+  & \mathtt 0 & \textit{constant zero}\\
+  & \mathtt{succ(a)} & \textit{successor}
+\end{align*}
+
+An alternative presentation uses rules featuring judgements of the form
+$\mathtt a~\mathsf{nat}$. The rules are as follows.
+%
+\begin{mathpar}
+  \inferrule*[lab=n-zero]{ }{\mathtt 0~\mathsf{nat}}
+  \and
+  \inferrule*[lab=n-succ]{\mathtt a~\mathsf{nat}}{\mathtt{succ(a)}~\mathsf{nat}}
+\end{mathpar}
+
+\textbf{A.} Show that $\mathtt{succ(succ(succ(succ(succ(0)))))~\mathsf{nat}}$ by
+exhibiting an appropriate derivation.
+
+\[
+{\inferrule* [Right=N-SUCC]
+  {\inferrule* [Right=N-SUCC] 
+  	{\inferrule* [Right=N-SUCC]
+    		{\inferrule* [Right=N-SUCC]
+  			{\inferrule* [Right=N-ZERO]
+  			{\mathtt{0}~\mathsf{nat}}
+  			{\mathtt{succ(0)}~\mathsf{nat}}}
+  		{\mathtt{succ(succ(0))}~\mathsf{nat}}}
+    {\mathtt{succ(succ(succ(0)))}~\mathsf{nat}}}
+  {\mathtt{succ(succ(succ(succ(0))))}~\mathsf{nat}}}
+{\mathtt{succ(succ(succ(succ(succ(0)))))}~\mathsf{nat}}}
+\]
+The term is well-typed by definition, since every subterm is well-typed by definition, so the typing statement $\mathtt{succ(succ(succ(succ(succ(0)))))~\mathsf{nat}}$ is confirmed to be true.\\
+
+
+Now consider the even and the odd predicate, also defined in rule format
+%
+\begin{mathpar}
+  \inferrule*[lab=e-zero]{ }{\mathtt 0~\mathsf{even}}
+  \and
+  \inferrule*[lab=e-succ]{\mathtt a~\mathsf{odd}}{\mathtt{succ(a)}~\mathsf{even}}
+  \and
+  \inferrule*[lab=o-succ]{\mathtt a~\mathsf{even}}{\mathtt{succ(a)}~\mathsf{odd}}
+\end{mathpar}
+
+\textbf{B.} Show that the successor of the successor of an odd number is odd.
+Then show that the successor of the successor of an odd even number is even.
+\begin{mathpar}
+{\inferrule* [Right=E-SUCC]
+  {\inferrule* [Right=O-SUCC] 
+  	{\mathtt{a}~\mathsf{even}}
+  {\mathtt{(succ(a))}~\mathsf{odd}}}
+{\mathtt{succ(succ(a))}~\mathsf{even}}}
+
+{\inferrule* [Right=O-SUCC]
+  {\inferrule* [Right=E-SUCC] 
+  	{\mathtt{a}~\mathsf{odd}}
+  {\mathtt{(succ(a))}~\mathsf{even}}}
+{\mathtt{succ(succ(a))}~\mathsf{odd}}}
+\end{mathpar}
+\\
+After terms (natural numbers) and predicates (odd and even), also $n$-ary
+relations can be written in rule format. Consider the addition function on
+natural numbers. There are only two rules. One for the base case ($\mathtt 0$)
+and the other for step ($\mathtt{succ(a)})$. The rule for the base case says
+that
+%
+\begin{quote}
+  if $\mathtt b$ is a natural number, then $\mathtt 0 + \mathtt b = \mathtt b$.
+\end{quote}
+%
+That for the successor is for you to derive.
+%
+To say that $\mathtt a + \mathtt b = \mathtt c$ we may use a judgement of the
+form $\mathsf{sum}(\mathtt a, \mathtt b, \mathtt c)$.
+
+\textbf{C.} Define a ternary relation
+$\mathsf{sum}(\mathtt a, \mathtt b, \mathtt c)$ by means of two rules. The
+relation should be defined on natural numbers only: we do not want to be able to
+conclude, for example, that  $\mathsf{sum}(\mathtt{succ(0)}, \mathtt{fish},
+\mathtt{succ(fish)})$.
+\begin{mathpar}
+  \inferrule*[lab=S-SUM]{\mathtt {sum(a,b,c)}}{\mathtt {sum(succ(a), b, succ(c))}}
+  \and
+  \inferrule*[lab=S-SUMZERO]{\mathtt b~\mathsf{nat}}{\mathtt {sum(0, b, b)}}
+\end{mathpar}
+\\\\
+\textbf{D.} Using rule induction show that
+\begin{enumerate}
+\item For every $\mathtt a~\mathsf{nat}$ and
+  $\mathtt b~\mathsf{nat}$, there is a $\mathtt c~\mathsf{nat}$ such that
+  $\mathsf{sum}(\mathtt a, \mathtt b, \mathtt c)$;\\\\
+  This has to be proved by induction on $e$\\
+  Assuming $\mathsf {c = a + b}$\\
+  
+  Case $e$ = $\mathsf {succ(a) + b}$:\\
+  By the rule E-SUCC, it is known that $\mathsf {succ(a)}~\mathsf{nat}$, and we know that the S-SUM relation can only be defined on nat values, so we assume $\mathsf {b}~\mathsf{nat}$.\\
+  With this, following the induction hypothesis, if $\mathsf {a}~\mathsf{nat}$ and $\mathsf {b}~\mathsf{nat}$ are true, it concludes that there is a $\mathsf {c}~\mathsf{nat}$ knowing that $\mathsf {sum(a, b, c)}$. Furthermore, when applying the rule N-SUCC on $c$, it is concluded that $\mathsf {succ(c)}~\mathsf{nat}$ because $\mathsf {c}~\mathsf{nat}$. So, it is true that $\mathsf {sum(succ(a), b, succ(c))}$.\\
+  
+  Case $e$ = $\mathsf {0 + b}$:\\
+  By the rule E-SUCC, it is known that $\mathsf 0~\mathsf{nat}$, and we know that the S-SUMZERO relation can only be defined on nat values, so we assume $\mathsf {b}~\mathsf{nat}$.\\
+  With this, following the induction hypothesis, if $\mathsf {a}~\mathsf{nat}$ and $\mathsf {b}~\mathsf{nat}$ are true, it concludes that there is a $\mathsf {c}~\mathsf{nat}$ knowing that $\mathsf {sum(a, b, c)}$.
+  
+\item $\mathtt c~\mathsf{nat}$ is unique.\\\\
+Case $\mathsf {c = succ(a)}$:\\
+  By the Inversion Typing Lemma in 2.D or by the N-ZERO rule, it is concluded that $\mathsf {0}~\mathsf{nat}$, so we can apply the induction hypothesis and simply conclude that 0 is unique, so $c$ is also unique.\\
+  
+  Case $\mathsf {c = 0}$:\\
+  By the Inversion Typing Lemma in 2.D or by the N-SUCC rule, it is concluded that $\mathsf {succ(a)}~\mathsf{nat}$ if $\mathsf {a}~\mathsf{nat}$ confirms to be true, so we can apply the induction hypothesis and conclude that if $\mathsf {a}~\mathsf{nat}$ then $t$ is unique, which justifies, in the previously mentioned rule, that $\mathsf {succ(a)}~\mathsf{nat}$, in other words, unique, so $c$ is also unique.\\
+\end{enumerate}
+
+Together these results say that $\mathsf{sum}$ is a total function.
+
+\textbf{E.} Give an inductive definition of the judgement
+$\mathsf{max}(\mathtt a, \mathtt b, \mathtt c)$ where $\mathtt a~\mathsf{nat}$,
+$\mathtt b~\mathsf{nat}$ and $\mathtt c~\mathsf{nat}$, with the meaning that
+$\mathtt c$ is the largest of $\mathtt a$ and $\mathtt b$.\\\\
+{[Definition]} Terms, Inductively
+\begin{enumerate}
+\item $\mathtt 0~\mathsf{nat} \subseteq \mathtt a$
+\item if $\mathtt a \subseteq \mathtt a$, then $\mathtt {succ(a)} \subseteq \mathtt a$
+\item if $\mathtt a \subseteq \mathtt a$ and $\mathtt b \subseteq \mathtt a$, then  $\mathtt c \subseteq \mathtt a$, since $\mathtt {c = a \lor c = b} $ (assuming $\mathtt {max(a, b, c)}$)
+\end{enumerate}
+Considering $\mathsf a$ the set of Terms defined in beginning of the report as a metavariable.\\
+{[Definition]} Terms, by Inference Rules
+\begin{mathpar}
+  \inferrule*[lab=S-MAX]{\mathtt {max(a,b,c)}}{\mathtt {max(succ(a), succ(b), succ(c))}}
+  \and
+  \inferrule*[lab=S-MAXZERO]{\mathtt a~\mathsf{nat}}{\mathtt {max(a, 0, a)}}
+  \and
+  \inferrule*[lab=S-MAXZERO2]{\mathtt b~\mathsf{nat}}{\mathtt {max(0, b, b)}}
+\end{mathpar}
+
+
+\section{Natural numbers, strings and typing (20\%)}
+
+We now define a language of natural numbers, strings and operations on these.
+%
+\begin{align*}
+  \mathtt e ::= & & \textit{terms:}\\
+  & \mathtt 0 & \textit{constant zero}\\
+  & \mathtt{succ(e)} & \textit{successor}\\
+  & \mathtt e + \mathtt e & \textit{addition}\\
+  & \varepsilon & \textit{empty string}\\
+  & \mathtt{Ae} & \textit{non-empty string}\\
+  & \mathtt{Be} & \textit{non-empty string}\\
+  & \mathsf{len}(\mathtt e) & \textit{string length}
+\end{align*}
+
+Natural numbers and their only operation ($\mathsf{+}$) are as defined in
+Section 1. Strings are built from $\varepsilon$, the empty string, and by prefixing
+a given string by letters $\mathtt A$ and $\mathtt B$. For simplicity strings
+are built from letters $A$ and $B$ alone. Examples of strings are $\varepsilon$,
+$\mathtt A\varepsilon$, $\mathtt B\varepsilon$, $\mathtt{BABA}\varepsilon$ and
+$\mathtt{ABBABABAABABABAB}\varepsilon$. The length of a string, $\mathsf{len}$,
+denotes a natural number. For example, $\mathsf{len}(\mathtt{BABA}\varepsilon)$
+denotes the natural number $\mathtt{succ(succ(succ(succ(0))))}$.
+
+\textbf{A.} Suggest a grammar for types appropriate to type terms. Use
+metavariable $\mathtt T$ to denote arbitrary types.
+\[ T ::= Nat | String \]
+
+\textbf{B.} Present a type system assigning types to terms. Use judgements of
+the from $\mathtt e : \mathtt T$.
+\begin{mathpar}
+  \inferrule*[lab=t-zero]{ }{\mathtt 0~\mathsf{:Nat}}
+  \and
+  \inferrule*[lab=t-succ]{\mathtt e ~\mathsf{:Nat}}{\mathtt{succ(e)}~\mathsf{:Nat}}
+  \and
+  \inferrule*[lab=t-sum]{\mathtt e1 ~\mathsf{:Nat} \\ \mathtt e2 ~\mathsf{:Nat}}{\mathtt{e1 + e2}~\mathsf{:Nat}}  
+\end{mathpar}
+
+\begin{mathpar}
+  \inferrule*[lab=t-empty]{ }{\mathtt \varepsilon ~\mathsf{:String}}
+  \and
+  \inferrule*[lab=t-astring]{\mathtt e ~\mathsf{:String}}{\mathtt {Ae} ~\mathsf{:String}}
+  \and
+  \inferrule*[lab=t-bstring]{\mathtt e ~\mathsf{:String}}{\mathtt {Be} ~\mathsf{:String}}
+  \and
+  \inferrule*[lab=t-len]{\mathtt e ~\mathsf{:String}}{\mathtt {len(e)} ~\mathsf{:Nat}}
+\end{mathpar}
+
+
+\textbf{C.} Exhibit a term that is typable according to the type system just
+defined and another that is untypable. Show that the terms you have selected are
+indeed typable and untypable.
+
+{[Definition]} A term $t$ is typable (or well typed) if there is some $T$ such that $t:T$.\\\\
+The following term is typable:
+\[
+{\inferrule* [Right=t-plus]
+  {{\inferrule* [Left=t-plus]
+  	{{\inferrule* [Left=t-succ] 
+  		{\inferrule* [Left=t-succ] 
+  			{\inferrule* [Left=t-zero] { } {\mathtt{0}~\mathsf{: Nat}}} 
+  		{\mathtt{succ(0)}~\mathsf{: Nat}}}
+  	{\mathtt{succ(succ(0))}~\mathsf{: Nat}}}
+  	\\
+  	{\inferrule* [Right=t-succ] 
+  		{\inferrule* [Right=t-len] 
+  			{\inferrule* [Right=t-astring] 
+  				{\inferrule* [Right=t-bstring] 
+  					{\inferrule* [Right=t-bstring] 
+  						{\inferrule* [Right=t-empty] { } {\mathtt{\varepsilon}~\mathsf{: String}}}  
+  						{\mathtt{B\varepsilon}~\mathsf{: String}}} 
+  					{\mathtt{BB\varepsilon}~\mathsf{: String}}}
+  			    {\mathtt{ABB\varepsilon}~\mathsf{: String}}}
+  			{\mathtt{len(ABB\varepsilon)}~\mathsf{: Nat}}}
+  		{\mathtt{succ(len(ABB\varepsilon))}~\mathsf{: Nat}}}}
+  	{\mathtt{succ(succ(0)) + succ(len(ABB\varepsilon))}~\mathsf{: Nat}}}
+  \\
+  {\inferrule* [Right=t-succ] 
+  	{{\inferrule* [Right=t-succ] {{\inferrule* [Right=t-zero]  { }
+  								{\mathtt{0}~\mathsf{: Nat}}}}
+  	{\mathtt{succ(0)}~\mathsf{: Nat}}}}
+  {\mathtt{succ(succ(0))}~\mathsf{: Nat}}}}
+{\mathtt{(succ(succ(0)) + succ(len(ABB\varepsilon))) + (succ(succ(0))}~\mathsf{: Nat}}}
+\]
+This is typable because for every instance of the typing rules at the derivation tree, each pair ($t$, $T$) in the typing relation is justified by a typing derivation with conclusion $t:T$.
+\\ \\
+The following term is untypable:
+\[
+{\inferrule* [Right=t-plus]
+  {{\inferrule* [Left=t-succ] 
+  	{\inferrule* [Left=t-len] {{\inferrule* [Left=t-empty] { }
+  							   {\mathtt{\varepsilon}~\mathsf{: String}}}}
+  	{\mathtt{len(\varepsilon)}~\mathsf{: Nat}}}
+  {\mathtt{succ(len(\varepsilon))}~\mathsf{: Nat}}}
+  \\
+  {\inferrule* [Right=t-??] 
+  	{ }
+  {\mathtt{A\varepsilon}~\mathsf{: Nat}}}}
+{\mathtt{succ(len(\varepsilon)) + A\varepsilon}~\mathsf{: Nat}}}
+\]
+Similarly to the previous justification, this is not typable because it is not true that for every instance of the typing rules at the derivation tree, each pair ($t$, $T$) in the typing relation is justified by a typing derivation with conclusion $t:T$.\\
+For example, on the first derivation, the term $A\varepsilon$ doesn't apply to any rule, since $A\varepsilon$ is of type String but it appears as Nat, which is wrong.\\ 
+
+\textbf{D.} Show the Unicity of Typing lemma: For every term
+$\mathtt e$ there is at most one type $\mathtt T$ such that $\mathtt e : \mathtt
+T$.\\\\
+{[Lemma]} Inversion of the Typing Relation
+\begin{enumerate}
+  \item If $\mathtt 0 ~\mathsf {: R}$, then $\mathsf R = ~\mathsf {Nat}$
+  \item If $\mathtt {succ \ e}~\mathsf{: R}$, then $\mathsf R = \mathsf {Nat}$ and $\mathsf {e} ~\mathsf {: Nat}$
+  \item If $\mathtt {e1 + e2}~\mathsf{: R}$, then $\mathsf R = \mathsf {Nat}$ and $\mathsf {e1} ~\mathsf {: Nat}$ and $\mathsf {e2} ~\mathsf {: Nat}$
+  \item If $\mathtt \varepsilon ~\mathsf {: R}$, then $\mathsf R = ~\mathsf {String}$
+  \item If $\mathtt {Ae}~\mathsf{: R}$, then $\mathsf R = \mathsf {String}$ and $\mathsf {e} ~\mathsf {: String}$
+  \item If $\mathtt {Be}~\mathsf{: R}$, then $\mathsf R = \mathsf {String}$ and $\mathsf {e} ~\mathsf {: String}$
+  \item If $\mathtt {len(e)}~\mathsf{: R}$, then $\mathsf R = \mathsf {Nat}$ and $\mathsf {e} ~\mathsf {: String}$
+\end{enumerate}
+{[Proof]} Immediate from the definition of the typing relation.\\\\\\
+{[Theorem]} Uniqueness of Types (the same as Unicity of Typing lemma)\\\\
+  {[Proof]} Straightforward induction using the appropriate clause of the inversion lemma, plus the induction hypothesis, for each case.\\
+  Being typable = $\mathtt t ~\mathsf{ : T}$ form.
+\begin{enumerate}
+  \item For $\mathtt {e = 0}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (1). By the induction hypothesis, if $\mathsf{e}$ is typable, i.e. $\mathtt {e}~\mathsf{ : Nat}$, then $e$ is unique. (See T-ZERO rule)
+  \item For $\mathtt {e = succ \ e1}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (2). By the induction hypothesis, if $\mathsf{e1}$ is typable, i.e. $\mathtt {e1}~\mathsf{ : Nat}$, then $e1$ is unique and by T-SUCC, $\mathtt {e}~\mathsf{ : Nat}$, in other words, unique.
+   \item For $\mathtt {e = e1 + e2}$, it's immediately conclusive from Inversion of the Typing Relation's clause (3). By the induction hypothesis, if $\mathsf{e1}$ is typable, i.e. $\mathtt {e1}~\mathsf{ : Nat}$, then $e1$ is unique and $\mathsf{e2}$ is typable, i.e. $\mathtt {e2}~\mathsf{ : Nat}$, then $e2$ is unique. By the rule T-SUM, $\mathtt {e}~\mathsf{ : Nat}$, in other words, unique.
+   \item For $\mathtt {e = \varepsilon}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (4). By the induction hypothesis, if $\mathsf{e}$ is typable, i.e. $\mathtt {e}~\mathsf{ : String}$, then $e$ is unique. (See T-EMPTY rule)
+   \item For $\mathtt {e = Ae1}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (5). By the induction hypothesis, if $\mathsf{e1}$ is typable, i.e. $\mathtt {e1}~\mathsf{ : String}$, then $e1$ is unique and by T-ASTRING, $\mathtt {e}~\mathsf{ : String}$, in other words, unique.
+   \item For $\mathtt {e = Be1}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (6). By the induction hypothesis, if $\mathsf{e1}$ is typable, i.e. $\mathtt {e1}~\mathsf{ : String}$, then $e1$ is unique and by T-BSTRING, $\mathtt {e}~\mathsf{ : String}$, in other words, unique.
+   \item For $\mathtt {e = len(e1)}$, it's immediately conclusive from the Inversion of the Typing Relation's clause (7). By the induction hypothesis, if $\mathsf{e1}$ is typable, i.e. $\mathtt {e1}~\mathsf{ : String}$, then $e1$ is unique and by T-LEN, $\mathtt {e}~\mathsf{ : Nat}$, in other words, unique.
+\end{enumerate}
+Because of this, we prove that each term t has at most one type.
+
+\section{Evaluation and type safety (30\%) }
+
+The dynamics of the term language is given by a transition system whose states
+are terms. All states are initial. Final states are \emph{values}. Values form a
+subset of terms and include the natural numbers and the strings.
+
+\textbf{A.} Define the predicate is-value by means of rules. Use a judgement of
+the form $\mathtt e~\mathsf{val}$.
+\begin{mathpar}
+  \inferrule*[lab=v-zero]{ }{\mathtt 0~\mathsf{val}}
+  \and
+  \inferrule*[lab=v-empty]{ }{\mathtt \varepsilon~\mathsf{val}}
+  \and
+  \inferrule*[lab=v-succ]{\mathtt e ~\mathsf{val}}{\mathtt{succ(e)}~\mathsf{val}}
+  \and
+  \inferrule*[lab=v-astring]{\mathtt e ~\mathsf{val}}{\mathtt{Ae}~\mathsf{val}}
+  \and
+  \inferrule*[lab=v-bstring]{\mathtt e ~\mathsf{val}}{\mathtt{Be}~\mathsf{val}}
+\end{mathpar}
+
+\textbf{B.} Define a \emph{one-step} evaluation relation that computes the
+addition and length operations. Use a judgement of the form
+$\mathtt e\rightarrow\mathsf e$. Take call-by-value for your reduction strategy:
+first evaluate the parameter(s), and only then apply the operator. For example,
+if $\mathtt e$ is a value, then $\mathtt{0+e}$ should evaluate to $\mathtt e$.
+But if $\mathtt e$ is \emph{not} a value (and $\mathtt e$ is typable), then
+$\mathtt e\rightarrow\mathsf{e'}$, for some $\mathtt{e'}$. In this case
+$\mathtt{0+e}$ should evaluate to $\mathtt{0+e'}$.\\
+
+Assuming the existence of the following metavariables:
+\begin{center}
+$nv ::= 0 \ | \ Succ \ nv$\\
+$sv ::= \varepsilon \ | \ Asv \ | \ Bsv$
+\end{center}
+
+\begin{mathpar}
+  \inferrule*[lab=e-succ]{\mathtt {e\rightarrow e'}}{\mathtt {succ(e)\rightarrow{succ(e')}}}
+  \and
+  \inferrule*[lab=e-sumzero]{\mathtt {e\rightarrow e'}}{\mathtt {0 + e\rightarrow{0 + e'}}}
+  \and
+  \inferrule*[lab=e-sumnv]{ }{\mathtt {0 + nv\rightarrow{nv}}}
+  \and
+  \inferrule*[lab=e-sumsucc]{ }{\mathtt {succ(e1) + e2\rightarrow{succ(e1 + e2)}}}
+  \and
+  \inferrule*[lab=e-sum]{\mathtt {e1\rightarrow e1'}}{\mathtt {e1 + e2\rightarrow{e1' + e2}}}
+  \and
+  \inferrule*[lab=e-astring]{ }{\mathtt {Asv\rightarrow{sv}}}
+  \and
+  \inferrule*[lab=e-bstring]{ }{\mathtt {Bsv\rightarrow{sv}}}
+  \and
+  \inferrule*[lab=e-len]{\mathtt {e\rightarrow e'}}{\mathtt {len(e)\rightarrow{succ(len(e'))}}}
+  \and
+  \inferrule*[lab=e-lenempty]{ }{\mathtt {len(\varepsilon)\rightarrow{0}}}
+\end{mathpar}
+
+\textbf{C.} Use your rules to show the following transitions
+%
+\begin{align*}
+  \mathtt{succ(0) + succ(0)} & \rightarrow \mathtt{succ(0 + succ(0))}\\
+  \mathtt{succ(0 + succ(0))} & \rightarrow \mathtt{succ(succ(0))}\\
+  \mathtt{len(AB\varepsilon)} & \rightarrow \mathtt{succ(len(B\varepsilon))}\\
+  \mathtt{succ(len(B\varepsilon))} & \rightarrow \mathtt{succ(succ(len(\varepsilon)))}\\
+  \mathtt{len(A\varepsilon) + succ(succ(0))}
+  & \rightarrow
+  \mathtt{succ(len(A\varepsilon)) + succ(succ(0))}
+\end{align*}
+\\
+\[{\inferrule* [Right=e-sumsucc]{ }{\mathtt{succ(0) + succ(0) \rightarrow succ(0 + succ(0))}}}\]\\
+\[{\inferrule* [Right=e-sumzerosucc]{ }{\mathtt{succ(0 + succ(0)) \rightarrow succ(succ(0))}}}\]\\
+\[
+{\inferrule* [Right=e-len]
+	{ \inferrule* [Right=e-astring] 
+		{ }
+		{\mathtt{AB\varepsilon \rightarrow B\varepsilon}}}
+	{\mathtt{len(AB\varepsilon) \rightarrow succ(len(B\varepsilon))}}}
+\]\\
+\[
+{\inferrule* [Right=e-succ]
+	{ \inferrule* [Right=e-len] 
+		{ \inferrule* [Right=e-bstring] 
+			{ } 
+			{\mathtt{B\varepsilon \rightarrow \varepsilon}}}
+		{\mathtt{len(B\varepsilon) \rightarrow succ(len(\varepsilon))}}}
+	{\mathtt{succ(len(B\varepsilon)) \rightarrow succ(succ(len(\varepsilon)))}}}
+\]\\
+\[
+{\inferrule* [Right=e-sum]
+	{\inferrule* [Right=e-len] 
+		{ \inferrule* [Right=e-astring] 
+			{ } 
+			{\mathtt{A\varepsilon \rightarrow \varepsilon}}}
+		{\mathtt{len(A\varepsilon) \rightarrow succ(len(\varepsilon))}}}
+	{\mathtt{len(A\varepsilon) + succ(succ(0)) \rightarrow succ(len(\varepsilon)) + succ(succ(0))}}}
+\]\\
+
+\textbf{D.} Show that if $\mathtt e : \mathtt T$ and no evaluation rule applies
+to  $\mathtt e$, then $\mathtt e ~\mathsf{val}$.\\ \\
+{[Definition]} A term $\mathtt t$ is in normal form if no evaluation rule applies to it, in other words, if there is no $\mathtt t'$ such that $\mathtt {t \rightarrow t'}$.\\
+Assuming that no evaluation rule applies to $\mathtt e$, then this means that $\mathtt e$ is in normal form.\\ \\
+{[Theorem]} If $\mathtt t$ is in normal form, then $\mathtt t$ is a value.\\
+Since $\mathtt e$ is in normal form, this means that $\mathtt e$ is a value, in other words, $\mathtt e$ $\mathtt {val}$.\\
+
+
+\textbf{E.} Show the Progress theorem. If $\mathtt e : \mathtt T$, then either
+$\mathtt e~\mathsf{val}$ or there exists $\mathtt{e'}$ such that $\mathtt e
+\rightarrow \mathtt{e'}$.\\\\
+{[Proof]} By induction on a derivation of $t:T$. The T-ZERO, T-EMPTY, T-ASTRING and T-BSTRING cases are immediate, since $t$ in these cases is a value. For the other cases, we argue as follows.\\\\
+Case T-SUCC:\\
+$\mathtt {e = succ}$ $\mathtt e1$ and $\mathtt e1 ~\mathsf {: Nat}$\\
+By induction hypothesis, either $e1$ is a value or else there is some $e1'$ such that $\mathtt e1 \rightarrow \mathtt e1'$. If $e1$ is a value, then the canonical forms lemma assures us that it must be a numeric value, in which case so is $e$. On the other hand, if $\mathtt e1 \rightarrow \mathtt e1'$, then, by E-SUCC, $\mathtt {succ}$ $\mathtt e1 \rightarrow$ $\mathtt {succ}$ $\mathtt e1'$.\\\\
+Case T-SUM:\\
+$\mathtt {e = e1}$ + $\mathtt e2$ and $\mathtt e1 ~\mathsf {: Nat}$ and $\mathtt e2 ~\mathsf {: Nat}$\\
+By induction hypothesis, either $e1$ is a value or else there is some $e1'$ such that $\mathtt e1 \rightarrow \mathtt e1'$. If $e1$ is a value, then the canonical forms lemma assures us that it must be a numeric value, in which there are two possible continuations, 1) either apply E-SUMNV or E-SUMSUCC to $e$ and assume $e2$ to be a value, then the canonical forms lemma assures us that it must be a numeric value; 2) apply E-SUMZERO to $e$ and assume $e2$ is not a value; On the other hand, if $\mathtt e1 \rightarrow \mathtt e1'$, then, by E-SUM, $\mathtt e \rightarrow$ $\mathtt {e = e1'}$ + $\mathtt e2$.\\\\
+Case T-SUCC:\\
+$\mathtt {e = len}$ $\mathtt e1$ and $\mathtt e1 ~\mathsf {: Nat}$\\
+By induction hypothesis, either $e1$ is a value or else there is some $e1'$ such that $\mathtt e1 \rightarrow \mathtt e1'$. If $e1$ is a value, then the canonical forms lemma assures us that it must be a numeric value, in which case so is $e$. On the other hand, if $\mathtt e1 \rightarrow \mathtt e1'$, then, by E-LEN, $\mathtt {len}$ $\mathtt e1 \rightarrow$ $\mathtt {succ(len}$ $\mathtt {(e1')})$.\\
+
+\textbf{F.} Show the Preservation theorem. If $\mathtt e : \mathtt T$ and
+$\mathtt e \rightarrow \mathtt{e'}$, then $\mathtt{e'} : \mathtt T$.\\\\
+{[Proof]} By induction on a derivation of $t:T$. At each step of the induction, we assume that the desired property holds for all subderivations (i.e., that if $\mathtt s ~\mathsf {: S}$ and $\mathtt s \rightarrow \mathtt s'$, then $\mathtt s' ~\mathsf {: S}$ whenever $\mathtt s ~\mathsf {: S}$ is proved by a subderivation of the present one) then  and proceed by case analysis on the final rule in the derivation.\\\\
+Case T-ZERO:\\
+$\mathtt {e = 0}$ and $\mathtt T~\mathsf {= Nat}$\\
+If the last rule in the derivation is T-ZERO, then we know from the form of this rule that $e$ must be a value and $\mathtt T$ must be $\mathsf { : Nat}$. But if $e$ is a value, then it cannot be the case that $\mathtt e \rightarrow \mathtt{e'}$ for any $e'$, and the requirements of the theorem are vacuously satisfied.
+\\\\
+Case T-SUCC:\\
+$\mathtt {e = succ}$ $\mathtt e1$, $\mathtt T~\mathsf {= Nat}$ and $\mathtt e1 ~\mathsf {: Nat}$\\
+By inspecting the evaluation rules, we see that there is just one rule, E-SUCC, that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$. The form of this rule tells us that $\mathtt e1 \rightarrow \mathtt{e1'}$. Since we also know $\mathtt e1 ~\mathsf {: Nat}$, we can apply the induction hypothesis to obtain $\mathtt e1' ~\mathsf {: Nat}$, from which we obtain $\mathtt {succ(e1')} ~\mathsf {: Nat}$, i.e., $\mathtt{e'} : \mathtt T$, by applying rule T-SUCC.\\\\
+Case T-SUM:\\
+$\mathtt {e = e1 + e2}$, $\mathtt T~\mathsf {= Nat}$, $\mathtt e1 ~\mathsf {: Nat}$ and $\mathtt e2 ~\mathsf {: Nat}$\\
+By inspecting the evaluation rules, we see that there are four rules, E-SUMZERO, E-SUMNV, E-SUMSUCC and E-SUM, that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$.
+\begin{enumerate}
+\item Subcase E-SUMZERO:\\
+$\mathtt {e' = 0 + e2'}$, $\mathtt {e1 = 0}$ and $\mathtt {e2 = e2'}$\\
+We know from the form of this rule that $\mathtt e2 \rightarrow \mathtt{e2'}$ must be the only way and $\mathtt T$ must be $\mathsf { : Nat}$. We can apply the induction hypothesis to this subderivation, obtaining $\mathtt{e2'}~\mathsf{ : Nat}$. Combining this with the fact that $\mathtt{0}~\mathsf{ : Nat}$, we can apply rule T-SUM to conclude that $\mathtt {0 + e2'}~\mathsf{ : Nat}$, that is $\mathtt {e'}~\mathsf{ : Nat}$.
+\item Subcase E-SUMNV:\\
+$\mathtt {e' = 0 + e2}$ and $\mathtt {e1 = 0}$\\
+We know from the form of this rule that $e2$ must be a numeric value and $\mathtt T$ must be $\mathsf { : Nat}$. But if $e2$ is a value, then it cannot be the case that $\mathtt e2 \rightarrow \mathtt{e2'}$ for any $e2'$, and the requirements of the theorem are vacuously satisfied.
+\item Subcase E-SUMSUCC:\\
+$\mathtt {e' = succ(e1) + e2}$\\
+We know from the form of this rule that $\mathtt T$ must be $\mathsf { : Nat}$ for $e2$. By inspecting the evaluation rules, we see that there is just one rule, E-SUCC, that can be used to derive $\mathtt {succ(e1)} \rightarrow \mathtt{succ(e1')}$. The form of this rule tells us that $\mathtt e1 \rightarrow \mathtt{e1'}$. Since we also know $\mathtt e1 ~\mathsf {: Nat}$, we can apply the induction hypothesis to obtain $\mathtt e1' ~\mathsf {: Nat}$, from which we obtain $\mathtt {succ(e1')} ~\mathsf {: Nat}$, by applying rule T-SUCC.
+\item Subcase E-SUM:\\
+$\mathtt {e' = e1' + e2}$\\
+From the assumption of the T-SUM case, we have a subderivation of the original typing derivation whose conclusion is $\mathtt{e1}~\mathsf{ : Nat}$. We know that $\mathtt e1 \rightarrow \mathtt{e1'}$, so we can apply the induction hypothesis to this subderivation, obtaining $\mathtt{e1'}~\mathsf{ : Nat}$. We can apply rule T-SUM to conclude that $\mathtt {e1' + e2}~\mathsf{ : Nat}$, that is $\mathtt {e'}~\mathsf{ : Nat}$.
+\end{enumerate}
+Case T-EMPTY:\\
+$\mathtt {e = \varepsilon}$ and $\mathtt T~\mathsf {= String}$\\
+If the last rule in the derivation is T-EMPTY, then we know from the form of this rule that $e$ must be a value and $\mathtt T$ must be $\mathsf { : String}$. But if $e$ is a value, then it cannot be the case that $\mathtt e \rightarrow \mathtt{e'}$ for any $e'$, and the requirements of the theorem are vacuously satisfied.\\\\
+Case T-ASTRING:\\
+$\mathtt {e = Ae1}$, $\mathtt T~\mathsf {= String}$ and $\mathtt e1 ~\mathsf {: String}$\\
+By inspecting the evaluation rules, we see that there is just one rule, E-ASTRING, that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$. The form of this rule tells us that $\mathtt Ae1 \rightarrow \mathtt{e1}$. Since we also know $\mathtt e1 ~\mathsf {: String}$, we can apply the rule T-ASTRING.\\\\
+Case T-BSTRING:\\
+$\mathtt {e = Be1}$, $\mathtt T~\mathsf {= String}$ and $\mathtt e1 ~\mathsf {: String}$\\
+By inspecting the evaluation rules, we see that there is just one rule, E-ASTRING, that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$. The form of this rule tells us that $\mathtt Be1 \rightarrow \mathtt{e1}$. Since we also know $\mathtt e1 ~\mathsf {: String}$, we can apply the rule T-ASTRING.\\\\
+Case T-LEN:\\
+$\mathtt {e = len}$ $\mathtt e1$, $\mathtt T~\mathsf {= Nat}$ and $\mathtt e1 ~\mathsf {: String}$\\
+By inspecting the evaluation rules, we see that there is just one rule, E-LEN, that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$. The form of this rule tells us that $\mathtt e1 \rightarrow \mathtt{e1'}$. Since we also know $\mathtt e1 ~\mathsf {: Nat}$, we can apply the induction hypothesis to obtain $\mathtt e1' ~\mathsf {: String}$, from which we obtain $\mathtt {succ(len(e1'))} ~\mathsf {: Nat}$, i.e., $\mathtt{e'} : \mathtt T$, by applying rule T-LEN.\\\\
+Case T-LENEMPTY:\\
+$\mathtt {e = len}$ $\mathtt \varepsilon$ and $\mathtt T~\mathsf {= Nat}$\\
+If the last rule in the derivation is T-LENEMPTY, then we know from the form of this rule that that can be used to derive $\mathtt e \rightarrow \mathtt{e'}$, $\varepsilon$ is value and $\mathtt T$ must be $\mathsf { : Nat}$. Since we also know $\mathtt \varepsilon ~\mathsf {: Nat}$, we can apply the induction hypothesis to $\mathtt len \ \varepsilon ~\mathsf {: Nat}$, from which we obtain $\mathtt 0 ~\mathsf {: Nat}$, i.e., $\mathtt{e'} : \mathtt T$, by applying rule T-LENEMPTY.\\\\
+
+\section{Implementation (30\%)}
+
+\textbf{A.} Write a \lstinline|data| declaration to describe terms. Write
+Haskell values for the five terms at the left of the arrow in Section 3.\textbf
+C.
+
+\textbf{B.} Write predicate \lstinline|val| and function \lstinline|eval1|. Use
+these functions to define a function \lstinline|eval| that computes the normal
+form of a term. Predicates must be complete. Functions may yield exceptions when
+in presence of non-typable terms.
+
+\textbf{B.} Write function \lstinline|typeof| that computes the type of a given
+term if this exists, and raises an exception otherwise.
+
+\bigskip Due date: October 24, 2022, 23:59
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

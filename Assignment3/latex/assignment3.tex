@@ -1,0 +1,146 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{palatino} % times is boring (but more concise)
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mathpartir}
+\usepackage[margin=1.20in]{geometry}
+
+\title{
+  \color{blue}Fundamentals of Programming Languages\\[1ex]
+  Assignment 3\\[1ex]
+  Records and Patterns}
+\author{Guilherme João Correia Lopes\\
+  fc52761
+}
+\date{2022/2023}
+
+\begin{document}
+\maketitle
+% \raggedright
+\setlength{\parskip}{1ex}
+\thispagestyle{empty}
+
+\section{Record Patterns}
+Assuming all the problem context given for the questions in group 1, we have the following as the answer for each question:\\
+%
+
+\textbf{A. Distinct variables in patterns}
+\begin{mathpar}
+  \inferrule*[lab=PW-VAR]
+  	{ }
+  	{\mathtt{x} ~\mathsf{:\{x\}}}
+  	\and
+  \inferrule*[lab=PW-RCD]
+  	{$for each$ \ \mathtt{i}, \ \mathtt{p_i} ~\mathsf{:\chi_i} \ \ \ \ $for each$ \ \mathtt{i,j}, \ \mathtt{i \neq j \Rightarrow \chi_i \cap \chi_j = \emptyset}}
+  	{\mathtt{\{{l_i = p_i}^{i \in 1..n}\}} ~\mathsf{:\chi_1 \cup .\ .\ . \cup \chi_n}}
+\end{mathpar}
+A collection of k items are pairwise distinct if no two of them are equal to one another. This is reflected in PW-RCD rule with the logic of intersecting each set of variables $\chi_i$ with every other set of variables $\chi_j$, if $i \neq j$. If every intersection results in a empty set ($\emptyset$), then it is pairwise distinct.\\
+For curiosity, I tried to implement these rules in the Haskell program for the implementation section, in the bottom of the code delivered. 
+\\
+
+\textbf{B. A good pattern and a not so good pattern}
+\begin{mathpar}
+	\inferrule*[Right=PW-RCD]
+  		{
+  			{
+  				{{\inferrule*[Left=PW-VAR] { } {\mathtt{x} ~\mathsf{:\{x\}}}}}
+  				\and
+  				{\inferrule*[Right=PW-RCD] 
+  					{ {\inferrule*[Left=PW-VAR] { } {\mathtt{z} ~\mathsf{:\{z\}}}} } 
+  					{ \{{\mathtt{n = z}\} ~\mathsf{:\{z\}}}}
+  				}
+  				\and
+  				{\inferrule*[] {} {\mathtt{\{x\} \cap \{z\} = \emptyset}}}
+  				\and
+  				{\inferrule*[] {} {\mathtt{\{z\} \cap \{x\} = \emptyset}}}
+  			} \\
+  			{}
+  		} 
+  		{\mathtt{{\{l = x, \ m = \{n = z\}\}}} ~\mathsf{:\{x, z\}}}
+\end{mathpar}
+\\
+The following derivation is not possible for any $\chi$:
+\begin{mathpar}
+	\inferrule*[Right=PW-RCD]
+  		{
+  			{
+  				{{\inferrule*[Left=PW-VAR] { } {\mathtt{x} ~\mathsf{:\{x\}}}}}
+  				\and
+  				{\inferrule*[Right=PW-RCD] 
+  					{ {\inferrule*[Left=PW-VAR] { } {\mathtt{x} ~\mathsf{:\{x\}}}} } 
+  					{ \{{\mathtt{n = x}\} ~\mathsf{:\{x\}}}}
+  				}
+  				\and
+  				{\inferrule*[] {} {\mathtt{\{x\} \cap \{x\} \neq \emptyset}}}
+  				\and
+  				{\inferrule*[] {} {\mathtt{\{x\} \cap \{x\} \neq \emptyset}}}
+  			} \\
+  			{}
+  		} 
+  		{\mathtt{{\{l = x, \ m = \{n = x\}\}}} ~\mathsf{:\chi}}
+\end{mathpar}
+As we can observe in the derivation attempt, the recursive intersection premises correspondent in $i = 0$ and $i = 1$, in other words, both $\{x\} \cap \{x\} \neq \emptyset$, betray the PW-RCD rule because the intersection doesn't result in a empty set, making this derivation to be "impossible" for any $\chi$ and all the variables in the pattern are not pairwise distinct.
+\\ \\
+For both the derivations, when applying PW-RCD rule a second time, the second "for each" premise doesn't apply, because the Record is a single element only and so there isn't a $\chi_i$ and $\chi_j$ given that $i \neq j$, and so the application $\chi_i \cap \chi_j = \emptyset$ isn't possible. Regardless, the premise is true.\\
+
+\textbf{C. Typing let expressions with patterns}
+\begin{mathpar}
+  \inferrule*[lab=P-VAR]
+  	{} {\vdash \mathtt{x} ~\mathsf{:T} \Rightarrow \mathtt{x} ~\mathsf{:T}}
+  \and
+  \inferrule*[lab=P-RCD]
+  	{$for each$ \ \mathtt{i,} \ \ \ \mathtt{\vdash p_i} ~\mathsf{:T_i} \Rightarrow \Delta_i}
+  	{\vdash \mathtt{\{{l_i = p_i}^{i \in 1..n}\}} ~\mathsf{:\{k_j} ~\mathsf{{:T_j}^{j \in 1..m}}\} \Rightarrow \Delta_1, . \ . \ ., \Delta_n}
+  \\
+  \inferrule*[lab=T-LET]
+  	{
+  		{\Gamma \vdash \mathtt{t_1} ~\mathsf{:T_1}} \\
+  		{\Gamma, \Delta \vdash \mathtt{t_2} ~\mathsf{:T_2}} \\
+  		{\vdash \mathtt{p} ~\mathsf{:T_1} \Rightarrow \Delta}
+  	}
+  	{\Gamma \vdash \mathtt{let \ p = t_1 \ in \ t_2} ~\mathsf{:T_2}}
+\end{mathpar}
+P-VAR and P-RCD rules define the "pattern typing" relation that takes a pattern and a type, returning a context defined here as $\Delta$, with its bindings for the variables in the pattern. In T-LET we add the $\Delta$ context to the original context defined by $\Gamma$.\\
+
+\textbf{D. Preservation and progress for let expressions with patterns}\\\\
+\textbf{AUXILIARY LEMMAS}
+\begin{enumerate}
+\item Weakening Lemma: If $\mathtt{\Gamma \vdash t} ~\mathsf{:T}$ and $\mathtt{\vdash p} ~\mathsf{:T} \Rightarrow \Delta$, then $match(p, t) = \sigma$, with $\mathtt{\Gamma \vdash} \sigma \models \Delta$
+\item Extending the Substitution Lemma: $\mathtt{\Gamma}, \Delta \ \mathtt{\vdash t} ~\mathsf{:T}$ and $\mathtt{\Gamma \vdash} \sigma \models \Delta$, then $\mathtt{\Gamma \vdash} \ \sigma t ~\mathsf{:T}$
+\end{enumerate}
+\textbf{PROGRESS}\\
+{[Proof]} By induction on a derivation of $t:T$.\\\\
+Case T-LET:\\
+$t = let \ p = t_1 \ in \ t_2$, \ $\Gamma\vdash t_1 : T_1$, \ $\Gamma\vdash p : T_1 \Rightarrow \Delta$ \ and $\Gamma, \Delta \vdash t_2 : T_2$\\ By induction hypothesis, either $t_1$ is a value or else there is some $t_1'$ such that $\mathtt t_1 \rightarrow \mathtt t_1'$. With that said, we have the following:
+\begin{enumerate}
+\item If $t_1$ is a value, then apply E-LETV and $\mathtt t$ reduces to $\mathtt t'$ by T-LET.
+\item If $\mathtt t_1 \rightarrow \mathtt t_1'$, then apply E-LET and $\mathtt t$ reduces to $\mathtt t'$ by T-LET.
+\end{enumerate} 
+\textbf{PRESERVATION} \\
+{[Proof]} By induction on a derivation of $t:T$. At each step of the induction, we assume that the desired property holds for all subderivations (i.e., that if $\mathtt s ~\mathsf {: S}$ and $\mathtt s \rightarrow \mathtt s'$, then $\mathtt s' ~\mathsf {: S}$ whenever $\mathtt s ~\mathsf {: S}$ is proved by a subderivation of the present one) then  and proceed by case analysis on the final rule in the derivation.\\\\
+Case T-LET:\\
+$t = let \ p = t_1 \ in \ t_2$, \ $\Gamma\vdash t_1 : T_1$, \ $\Gamma\vdash p : T_1 \Rightarrow \Delta$ \ and $\Gamma, \Delta \vdash t_2 : T_2$\\
+If the last rule in the derivation is T-LET, by inspecting the evaluation rules, we find that there are two rules, E-LET and E-LETV, that can be used to derive $\mathtt t \rightarrow \mathtt{t'}$.
+\begin{enumerate}
+\item E-LETV: $\mathtt{t' = match(p,v_1) \ t_2}$
+\\Since we know $\Gamma\vdash t_1 : T_1$ and $\Gamma\vdash p : T_1 \Rightarrow \Delta$, we can apply the weakening lemma to obtain $match(p,v1) = \sigma$, with $\mathtt{\Gamma \vdash} \sigma \models \Delta$, in other words, if $\sigma$ is a substitution and $\Delta$ is a context with the same domain as $\sigma$, then $\mathtt{\Gamma \vdash \ \sigma \models} \ \Delta$ means that, for each $x \in dom(\Delta)$, we have $\mathtt{\Gamma \vdash \ \sigma(x)} ~\mathsf{:}\ \Delta\mathtt{(x)}$. Since, it also known that $\Gamma, \Delta \vdash t_2 : T_2$ and $\mathtt{\Gamma \vdash} \sigma \models \Delta$, we apply the substitution lemma to obtain $\mathtt{\Gamma \vdash} \ \sigma t ~\mathsf{:T}$.
+\item E-LET: $\mathtt t_1 \rightarrow \mathtt t_1'$, \ $\mathtt{t' = let \ p = t_1' \ in \ t_2}$
+\\Since we know $\Gamma\vdash t_1 ~\mathsf{:T}$, we can apply the induction hypothesis to obtain $\Gamma\vdash t_1' ~\mathsf{:T}$, from which we obtain $\mathtt{let \ p = t_1' \ in \ t_2}~\mathsf {:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying rule T-LET.
+\\
+We obtain $\Gamma\vdash[x \rightarrow t_2] t_1' \mathsf{:T}$, i.e., $\mathtt{t'}~\mathsf{:T}$, by applying the Preservation of Types Under Substitution, in which its result preserves the type $\mathsf{T}$.
+\end{enumerate}
+
+\section{Implementation}
+\textbf{Reminder:} Due to being in doubt about maintaining the original Let binding from the book's section 11.5, it was also implemented in the code. If this was not necessary, this implementation should be ignored for clarity purposes.\\
+As mentioned previously, it was also implemented the vars-in-patterns rule, from exercise 1.A, in the bottom of the code.
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

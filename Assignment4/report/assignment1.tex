@@ -1,0 +1,57 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{palatino} % times is boring (but more concise)
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{mathpartir}
+\usepackage[margin=1.5in]{geometry}
+
+\title{
+  \color{blue}Fundamentals of Programming Languages\\[1ex]
+  Assignment 4\\[1ex]
+  Universal Types}
+\author{Mestrado em (Engenharia) Informática\\
+  Faculdade de Ciências da Universidade de Lisboa
+}
+\date{2022/2023}
+
+\begin{document}
+\maketitle
+% \raggedright
+\setlength{\parskip}{1ex}
+\thispagestyle{empty}
+
+\section{Binary Sums in System F}
+\begin{enumerate}
+  \item type Sum = $\forall$ T U V . (T -> V) -> (U -> V) -> V
+  \item inl : $\forall$ T U . T -> ($\forall$ V . (T -> V) -> (U -> V) -> V) \\
+        inl = \textbackslash T . \textbackslash U . \textbackslash l:T . \textbackslash V . \textbackslash t:(T -> V) . \textbackslash u:(U -> V) . t l
+  \item inr : $\forall$ T U . U -> ($\forall$ V . (T -> V) -> (U -> V) -> V) \\
+  inr = \textbackslash T . \textbackslash U . \textbackslash r:U . \textbackslash V . \textbackslash t:(T -> V) . \textbackslash u:(U -> V) . u r
+  \item cases : $\forall$ T U V . ($\forall$ V . (T -> V) -> (U -> V) -> V) -> (T -> V) -> (U -> V) -> V \\
+  cases = \textbackslash T . \textbackslash U . \textbackslash V . \textbackslash v:($\forall$ V . (T -> V) -> (U -> V) -> V) . \textbackslash lc:(T -> V) . \textbackslash rc:(U -> V) . v [V] lc rc
+  \item cases [T] [U] [T] (inl [T] [U] v) (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash V . \textbackslash t:(T -> V) . \textbackslash u:(U -> V) . t v) [T] (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash t:(T -> T) . \textbackslash u:(U -> T) . t v) (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash u:(U -> T) . (\textbackslash $x_1$ . $t_1$) v) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash $x_1$ . $t_1$) v \\\\
+    This result is equivalent to [$x_1$ -> $v$]$t_1$, proving that it reduces to the latter result.\\
+    We can notice that this looks similar to a more generic implementation of what we have in fromL (2.2).
+  \item cases [T] [U] [U] (inr [T] [U] v) (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash V . \textbackslash t:(T -> V) . \textbackslash u:(U -> V) . u v) [U] (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash t:(T -> U) . \textbackslash u:(U -> U) . u v) (\textbackslash $x_1$ . $t_1$) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash u:(T -> U) . u v) (\textbackslash $x_2$ . $t_2$) = \\
+    (\textbackslash $x_2$ . $t_2$) v \\\\
+    This result is equivalent to [$x_2$ -> $v$]$t_2$, proving that it reduces to the latter result.\\
+    We can notice that this looks similar to a more generic implementation of what we have in fromR (2.3).
+\end{enumerate}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
